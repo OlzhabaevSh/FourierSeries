@@ -1,77 +1,44 @@
-import Chart from "chart.js";
-import { useEffect, useRef } from "react";
-import { CalculateMassesCenter, ConvertToVector, ConvertVectorsToCoordinates, GetMultSin } from "../services/math.service";
+import { CartesianGrid, Legend, Scatter, ScatterChart, Tooltip, XAxis, YAxis } from "recharts";
 import Card from "./card.component";
 
-interface Props {
-    chartData: { x: number, y: number }[];
-}
+export const CircleDiagram: React.FunctionComponent <{ coordinates: { x: number, y: number }[], centerOfMass: { x: number, y: number }, a: number }> = ({ coordinates, centerOfMass, a }) => {
 
-const CircleChart = ({ chartData }: Props) => {
-    // helper function to format chart data since you do this twice
-    const formatData = (data: { x: number, y: number }[]): Chart.ChartData => ({
-        datasets: [{ data }]
+    let [ maxX, 
+        minX, 
+        maxY, 
+        minY ] =  [-1, 1, -1, 1];
+
+    coordinates.forEach(item => {
+        if(item.x > maxX)
+            maxX = item.x;
+        
+        if(item.x < minX)
+            minX = item.x;
+
+        if(item.y > maxY)
+            maxY = item.y;
+
+        if(item.y < minY)
+            minY = item.y;
     });
-
-    // use a ref to store the chart instance since it it mutable
-    const chartRef = useRef<Chart | null>(null);
-
-    // callback creates the chart on the canvas element
-    const canvasCallback = (canvas: HTMLCanvasElement | null) => {
-        if (!canvas) return;
-        const ctx = canvas.getContext("2d");
-        if (ctx) {
-            chartRef.current = new Chart(ctx, {
-                type: "scatter",
-                data: formatData(chartData),
-                options: { 
-                    responsive: true,
-                    tooltips: {
-                        enabled: false
-                    }
-                },
-            });
-
-            
-        }
-    };
-
-    // effect to update the chart when props are updated
-    useEffect(() => {
-        // must verify that the chart exists
-        if (chartRef.current) {
-            chartRef.current.data = formatData(chartData);
-            chartRef.current.update();
-        }
-
-        // cleanup function - I had to remove this as it was causing errors
-        /*return () => {
-          chartRef.current?.destroy();
-        };*/
-    }, [chartData]);
-
-    return (
-        <div className="self-center w-1/2">
-            <div className="overflow-hidden">
-                <canvas ref={canvasCallback}></canvas>
-            </div>
-        </div>
-    );
-}
-
-export const CircleDiagram: React.FunctionComponent <{ sequence: { t: number, value: number }[], freq: number }> = ({ sequence, freq }) => {
-
-    const vectors = ConvertToVector(sequence, freq);
-
-    const data = ConvertVectorsToCoordinates(vectors);
-
-    const centerOfMass = CalculateMassesCenter(data);
 
     return (
         <Card title="Circle diagram">
             <div>
-                <p>Sum: {centerOfMass}</p>
-                <CircleChart chartData={data} />
+                <p>Center: {a} | {centerOfMass.x} {centerOfMass.y}</p>
+                <ScatterChart 
+                    width={400}
+                    height={400}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <Tooltip cursor={{ strokeDasharray: '3 3' }} />
+                        <Legend />
+                        <XAxis type="number" dataKey="x" range={[minX, maxX]} />
+                        <YAxis type="number" dataKey="y" range={[minY, maxY]} />
+                        <Scatter 
+                            name="Rads" 
+                            data={coordinates} 
+                            fill="#8884d8" />
+                </ScatterChart>
             </div>
         </Card>
     );

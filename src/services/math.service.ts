@@ -2,8 +2,6 @@ export function SumXandB(x: number, y: number): number {
     return x + y;
 }
 
-var cachedResult : { t: number, value: number }[] = [];
-
 export function GetMultSin(
     freqs: { aMax: number, freq: number }[],
     deltaTimeBySecond: number = 0.01, 
@@ -11,6 +9,17 @@ export function GetMultSin(
     addingByA: number = 0) 
     : { t: number, value: number }[] {
         
+        console.info('GetMultSin called', {
+            freqs,
+            deltaTimeBySecond,
+            durationBySecond,
+            addingByA
+        });
+
+        if(freqs.length <= 0
+            || deltaTimeBySecond <= 0)
+                return [];
+
         let result : { t: number, value: number }[] = [];
 
         for(let t = 0; t < durationBySecond; t += deltaTimeBySecond){
@@ -27,6 +36,8 @@ export function GetMultSin(
             });
         }
 
+        console.info('GetMultSin finished');
+
         return result;
     }
 
@@ -34,6 +45,9 @@ export function ConvertToVector(
     sequence: { t: number, value: number }[],
     freq: number)
     : { value: number, angle: number }[] {
+
+        if(sequence.length <= 0)
+            return [];
 
         let result : { value: number, angle: number }[] = [];
 
@@ -70,7 +84,7 @@ export function ConvertVectorsToCoordinates(
 
 export function CalculateMassesCenter(
     seqcuences: { x: number, y: number }[])
-    : number {
+    : { radius: number, x: number, y: number } {
         const count = seqcuences.length;
 
         var sumMatrix = seqcuences.reduce((prev, cur) => {
@@ -86,5 +100,9 @@ export function CalculateMassesCenter(
             (sumDivCount.x * sumDivCount.x) + (sumDivCount.y * sumDivCount.y)
         );
 
-        return result;
+        return {
+            radius: result,
+            x: sumDivCount.x,
+            y: sumDivCount.y
+        };
     }

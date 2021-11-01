@@ -1,71 +1,88 @@
-import React, { useState } from 'react';
-import { Stack, Text, Link, FontWeights, IStackTokens, IStackStyles, ITextStyles } from '@fluentui/react';
-import logo from './logo.svg';
+import { DefaultPalette, IStackItemStyles, IStackTokens, Stack } from '@fluentui/react';
 import './App.css';
 import { ApplicationHeader } from './components/application-header.component';
-import { InputForm } from './components/inpit-form.component';
 import { LineChartDiagram } from './components/line-chart.component';
 import { CircleDiagram } from './components/circle-diagram.component';
 import { SpectralAnalyzeDiagram } from './components/spectral-analyze-diagram';
 import { GetMultSin } from './services/math.service';
-
-const boldStyle: Partial<ITextStyles> = { root: { fontWeight: FontWeights.semibold } };
-const stackTokens: IStackTokens = { childrenGap: 15 };
-const stackStyles: Partial<IStackStyles> = {
-  root: {
-    width: '960px',
-    margin: '0 auto',
-    textAlign: 'center',
-    color: '#605e5c',
-  },
-};
+import { SignalMixer } from './components/signal-mixer.component';
+import { useState } from 'react';
 
 export const App: React.FunctionComponent = () => {
-  //var [count, setCount] = useState(1)
-  //setInterval(() => { setCount(++count) }, 1000)
 
-  const delta = 0.004;
-  const duration = 4.5;
+  // ui
+  const stackItemStyles: IStackItemStyles = {
+    root: {
+      alignItems: 'center',
+      display: 'flex',
+      height: 50,
+      justifyContent: 'center',
+    },
+  };
+  
+  // Tokens definition
+  const stackTokens: IStackTokens = {
+    childrenGap: 5,
+    padding: 10,
+  };
 
-    const sequence = GetMultSin(
-        [
-            { aMax: 2, freq: 4 }, 
-            { aMax: 5, freq: 12 },
-        ],
-        delta,
-        duration,
-        10
-    );
+
+  // logic
+
+  const [deltaT, setDeltaT] = useState(0);
+
+  const [sequence, setSequence] = useState<{ t: number, value: number }[]>([]);
+
+  // data for circle
+  const [centerOfMass, setCenterOfMass] = useState<{x: number, y: number}>({ x: 0, y: 0 });
+  const [circleDiagramCoordinates, setCircleDiagramCoordinates] = useState<{ x: number, y: number }[]>([])
+  const [maxA, setMaxA] = useState(0);
+
+  const getDataByMixer = (signals: { aMax: number, freq: number }[], durationBySecond: number, deltaTBySecond: number, deltaA: number) => {
+    setDeltaT(deltaTBySecond);
+
+    const seqs = GetMultSin(
+      signals,
+      deltaTBySecond,
+      durationBySecond,
+      deltaA);
+
+    setSequence(seqs);
+  };
+
+  const updateCircleDiagramHandler = (coords: { x: number, y: number }[], cntrOfMass: { radius: number, x: number, y: number }) => {
+    setCenterOfMass(prevVal => (cntrOfMass));
+    setCircleDiagramCoordinates(prevVal => (coords));
+    setMaxA(prevVal => (cntrOfMass.radius))
+  };
+
 
   return (
     <Stack>
-      <Stack.Item grow>
-        <ApplicationHeader />
-      </Stack.Item>
       
-      <Stack.Item grow>
-        <Stack horizontal>
-          <Stack.Item grow={1}>
-            <InputForm delta={delta} series={sequence.map(f => f.value)} />
-          </Stack.Item>
-          <Stack.Item grow={3}>
-            <LineChartDiagram sequence={sequence} delta={delta} />
-          </Stack.Item>
-        </Stack>
-      </Stack.Item>
 
-      <Stack.Item grow>
-        <Stack horizontal>
-          <Stack.Item grow={1}>
-            <CircleDiagram sequence={sequence} freq={13} />
-          </Stack.Item>
+      <ApplicationHeader />
 
-          <Stack.Item grow={3}>
-            <SpectralAnalyzeDiagram sequence={sequence} />
-          </Stack.Item>
-          
-        </Stack>  
-      </Stack.Item>
+      <Stack horizontal>
+        <SignalMixer 
+          updateSignals={getDataByMixer} />
+        <LineChartDiagram 
+          sequence={sequence} 
+          delta={deltaT} />
+      </Stack>
+
+      <Stack horizontal>
+        <CircleDiagram 
+          coordinates={circleDiagramCoordinates} 
+          centerOfMass={centerOfMass}
+          a={maxA} />
+
+        <SpectralAnalyzeDiagram 
+          sequence={sequence} 
+          updateCollback={updateCircleDiagramHandler} />
+        
+      </Stack>
+
 
     </Stack>
   );

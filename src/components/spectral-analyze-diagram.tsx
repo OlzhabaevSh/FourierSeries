@@ -1,92 +1,106 @@
-import Chart from "chart.js";
-import { useEffect, useRef } from "react";
-import { CalculateMassesCenter, ConvertToVector, ConvertVectorsToCoordinates, GetMultSin } from "../services/math.service";
+import { PrimaryButton, Stack, TextField } from "@fluentui/react";
+import { useState } from "react";
+import { CartesianGrid, Legend, Scatter, ScatterChart, Tooltip, XAxis, YAxis } from "recharts";
+import { CalculateMassesCenter, ConvertToVector, ConvertVectorsToCoordinates } from "../services/math.service";
 import Card from "./card.component";
 
-interface Props {
-    delta: number,
-    chartData: number[];
+export type SpectralAnalyzeDiagramParams = {
+    sequence: { t: number, value: number }[],
+    updateCollback: (coords: { x: number, y: number }[], cntrOfMass: { radius: number, x: number, y: number }) => void
 }
 
-const BarChart = ({ chartData, delta }: Props) => {
-    // helper function to format chart data since you do this twice
-    const formatData = (data: number[]): Chart.ChartData => ({
-        labels: data.map((cur, i) => (i + 1) * delta),
-        datasets: [{ data }]
-    });
+export const SpectralAnalyzeDiagram: React.FunctionComponent<SpectralAnalyzeDiagramParams> = ({ sequence, updateCollback }) => {
 
-    // use a ref to store the chart instance since it it mutable
-    const chartRef = useRef<Chart | null>(null);
+    const [fMax, setFMax] = useState(10);
+    const [deltaF, setdeltaF] = useState(1);
+    const [spectralData, setSpectralData] = useState<{f: number, a: number}[]>([]);
 
-    // callback creates the chart on the canvas element
-    const canvasCallback = (canvas: HTMLCanvasElement | null) => {
-        if (!canvas) return;
-        const ctx = canvas.getContext("2d");
-        if (ctx) {
-            chartRef.current = new Chart(ctx, {
-                type: "bar",
-                data: formatData(chartData),
-                options: { responsive: true }
-            });
-        }
-    };
+    const wait = (timeout: number) => {
+        return new Promise((resolve) => {
+            setTimeout(resolve, timeout);
+        });
+    }
 
-    // effect to update the chart when props are updated
-    useEffect(() => {
-        // must verify that the chart exists
-        if (chartRef.current) {
-            chartRef.current.data = formatData(chartData);
-            chartRef.current.update();
+    const StartCaclulating = async () => {
+        
+        setSpectralData([]);
+
+        let freqs: number[] = [];
+        for(let i = 0; i <= fMax + 2; i+= deltaF) {
+            freqs.push(i);
         }
 
-        // cleanup function - I had to remove this as it was causing errors
-        /*return () => {
-          chartRef.current?.destroy();
-        };*/
-    }, [chartData]);
+        for await (const freq of freqs) {
+            // calculate
+            // throw event
 
-    return (
-        <div className="self-center w-1/2">
-            <div className="overflow-hidden">
-                <canvas ref={canvasCallback}></canvas>
-            </div>
-        </div>
-    );
-}
+            const vectors = ConvertToVector(sequence, freq);
 
-export const SpectralAnalyzeDiagram: React.FunctionComponent<{ sequence: { t: number, value: number }[] }> = ({ sequence }) => {
+            const data = ConvertVectorsToCoordinates(vectors);
 
-    var cachedData = new Array(15).fill(0).map((m, i) => i + 1);
+            const centerOfMass = CalculateMassesCenter(data);
 
-    var d : { freq: number, val: number, countOfMathcing: number }[] = [];
+            setSpectralData(prevVal => 
+                ([...prevVal, { f: freq, a: centerOfMass.radius }]));
+            
+            // throw event
+            updateCollback(data, centerOfMass);
 
-    cachedData.forEach(item => {
-        const vectors = ConvertToVector(sequence, item);
+            await wait(200);
+        }
+    }
+
+    const itemSelected = (e: { f: number, a: number }, index: number) => {
+        let freq = e.f;
+
+        const vectors = ConvertToVector(sequence, freq);
 
         const data = ConvertVectorsToCoordinates(vectors);
 
-        var matchingDict: { [name: string]: number } = {};
-        var matchingCount = 0;
-
-        data.forEach(item => {
-            if(matchingDict[item.x + '_' + item.y] == undefined){
-                matchingDict[item.x + '_' + item.y] = 0;
-            } else {
-                matchingDict[item.x + '_' + item.y]++;
-                matchingCount++;
-            }
-        });
-
         const centerOfMass = CalculateMassesCenter(data);
 
-        d.push({ freq: item, val: centerOfMass, countOfMathcing: matchingCount });
-    });
+        console.table(data);
 
-    var data = d.map(f => f.val);
-
+        updateCollback(data, centerOfMass);
+    };
+    
     return (
         <Card title="Spectral analize">
-            <BarChart chartData={data} delta={1} />
+            <Stack horizontal>
+                <TextField 
+                    label="Max F" 
+                    type="number"
+                    value={fMax.toString()}
+                    onChange={(e, v) => setFMax(parseInt(v??"0"))} />
+
+                <TextField 
+                    label="delta f"
+                    type="number" 
+                    value={deltaF.toString()}
+                    onChange={(e, v) => setdeltaF(parseFloat(v??"0"))} />
+                
+                <PrimaryButton 
+                    text="Start calulcating" 
+                    onClick={StartCaclulating} />
+            </Stack>
+
+            <br />
+            
+            <ScatterChart
+                width={1000}
+                height={400}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <Tooltip cursor={{ strokeDasharray: '3 3' }} />
+                    <Legend />
+                    <XAxis dataKey="f" />
+                    <YAxis dataKey="a" />
+                    <Scatter 
+                        name="Spectral analyze" 
+                        data={spectralData}
+                        onClick={itemSelected} 
+                        fill="#8884d8" />
+            </ScatterChart>
+
         </Card>
     );
 };
