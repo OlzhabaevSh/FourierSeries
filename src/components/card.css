@@ -1,0 +1,16 @@
+.card {
+    border: 1px solid black;
+    margin: 25px;
+}
+
+.card .card-header {
+    margin: 10px;
+    text-align: center;
+}
+
+.card .card-body {
+    margin: 20px;
+    min-width: 700px;
+    min-height: 700px;
+}
+

@@ -1,7 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Stack, Text, Link, FontWeights, IStackTokens, IStackStyles, ITextStyles } from '@fluentui/react';
 import logo from './logo.svg';
 import './App.css';
+import { ApplicationHeader } from './components/application-header.component';
+import { InputForm } from './components/inpit-form.component';
+import { LineChartDiagram } from './components/line-chart.component';
+import { CircleDiagram } from './components/circle-diagram.component';
+import { SpectralAnalyzeDiagram } from './components/spectral-analyze-diagram';
+import { GetMultSin } from './services/math.service';
 
 const boldStyle: Partial<ITextStyles> = { root: { fontWeight: FontWeights.semibold } };
 const stackTokens: IStackTokens = { childrenGap: 15 };
@@ -15,30 +21,52 @@ const stackStyles: Partial<IStackStyles> = {
 };
 
 export const App: React.FunctionComponent = () => {
+  //var [count, setCount] = useState(1)
+  //setInterval(() => { setCount(++count) }, 1000)
+
+  const delta = 0.004;
+  const duration = 4.5;
+
+    const sequence = GetMultSin(
+        [
+            { aMax: 2, freq: 4 }, 
+            { aMax: 5, freq: 12 },
+        ],
+        delta,
+        duration,
+        10
+    );
+
   return (
-    <Stack horizontalAlign="center" verticalAlign="center" verticalFill styles={stackStyles} tokens={stackTokens}>
-      <img className="App-logo" src={logo} alt="logo" />
-      <Text variant="xxLarge" styles={boldStyle}>
-        Welcome to your Fluent UI app
-      </Text>
-      <Text variant="large">For a guide on how to customize this project, check out the Fluent UI documentation.</Text>
-      <Text variant="large" styles={boldStyle}>
-        Essential links
-      </Text>
-      <Stack horizontal tokens={stackTokens} horizontalAlign="center">
-        <Link href="https://developer.microsoft.com/en-us/fluentui#/get-started/web">Docs</Link>
-        <Link href="https://stackoverflow.com/questions/tagged/office-ui-fabric">Stack Overflow</Link>
-        <Link href="https://github.com/microsoft/fluentui/">Github</Link>
-        <Link href="https://twitter.com/fluentui">Twitter</Link>
-      </Stack>
-      <Text variant="large" styles={boldStyle}>
-        Design system
-      </Text>
-      <Stack horizontal tokens={stackTokens} horizontalAlign="center">
-        <Link href="https://developer.microsoft.com/en-us/fluentui#/styles/web/icons">Icons</Link>
-        <Link href="https://developer.microsoft.com/en-us/fluentui#/styles/web">Styles</Link>
-        <Link href="https://aka.ms/themedesigner">Theme designer</Link>
-      </Stack>
+    <Stack>
+      <Stack.Item grow>
+        <ApplicationHeader />
+      </Stack.Item>
+      
+      <Stack.Item grow>
+        <Stack horizontal>
+          <Stack.Item grow={1}>
+            <InputForm delta={delta} series={sequence.map(f => f.value)} />
+          </Stack.Item>
+          <Stack.Item grow={3}>
+            <LineChartDiagram sequence={sequence} delta={delta} />
+          </Stack.Item>
+        </Stack>
+      </Stack.Item>
+
+      <Stack.Item grow>
+        <Stack horizontal>
+          <Stack.Item grow={1}>
+            <CircleDiagram sequence={sequence} freq={13} />
+          </Stack.Item>
+
+          <Stack.Item grow={3}>
+            <SpectralAnalyzeDiagram sequence={sequence} />
+          </Stack.Item>
+          
+        </Stack>  
+      </Stack.Item>
+
     </Stack>
   );
 };
