@@ -1,6 +1,4 @@
-import { PrimaryButton, Stack, TextField } from "@fluentui/react";
 import { useState } from "react";
-import Card from "./card.component";
 
 export const SignalMixer: React.FunctionComponent<{updateSignals : (signals: { aMax: number, freq: number }[], durationBySecond: number, deltaTBySecond: number, deltaA: number ) => void}> = ({updateSignals}) => {
     
@@ -33,55 +31,100 @@ export const SignalMixer: React.FunctionComponent<{updateSignals : (signals: { a
             deltaA);
     };
 
-    return (<div>
-        <Card title="Signal Mixer">
-            <Stack>
-                <TextField label="Duration by seconds" 
-                    type="number" 
-                    onChange={(e, v) => setDurationBySecond(parseFloat(v??"0"))}
-                    defaultValue={durationBySecond.toString()} />
+    return (
+        <div className="card">
+            <div className="card-header">
+                Signal Mixer
+            </div>
+            <div className="card-body">
+                <div className="row">
+                    <div className="col-md-4">
+                        <div className="md-3">
+                            <label className="form-label">Duration by seconds</label>
+                            <input 
+                                className="form-control"
+                                type="number"
+                                value={durationBySecond}
+                                onChange={e => setDurationBySecond(parseFloat(e.target.value??"1"))} />
+                        </div>
+                    </div>
+                    <div className="col-md-4">
+                        <div className="md-3">
+                            <label className="form-label">delta t by seconds</label>
+                            <input 
+                                className="form-control"
+                                type="number"
+                                value={deltaTBySecond}
+                                onChange={e => setDeltaTBySecond(parseFloat(e.target.value??"1"))} />
+                        </div>
+                    </div>
+                    <div className="col-md-4">
+                        <div className="md-3">
+                            <label className="form-label">delta A plus</label>
+                            <input 
+                                className="form-control"
+                                type="number"
+                                value={deltaA}
+                                onChange={e => setDeltaA(parseFloat(e.target.value??"1"))} />
+                        </div>
+                    </div>
+                </div>
 
-                <br />
+                <div className="row">
+                    <div className="col-md-4">
+                        <div className="md-3">
+                            <label className="form-label">A Max(t)</label>
+                            <input 
+                                className="form-control"
+                                type="number"
+                                value={aMax}
+                                onChange={e => setAMax(parseFloat(e.target.value??"1"))} />
+                        </div>
+                    </div>
+                    <div className="col-md-4">
+                        <div className="md-3">
+                            <label className="form-label">Frequence</label>
+                            <input 
+                                className="form-control"
+                                type="number"
+                                value={freq}
+                                onChange={e => setFreq(parseFloat(e.target.value??"1"))} />
+                        </div>
+                    </div>
+                    <div className="col-md-4">
+                        <button 
+                            className="btn btn-primary"
+                            style={{ margin: 30  }}
+                            onClick={AddSignal}>Add signal</button>
+                    </div>
+                </div>
 
-                <TextField label="delta t by seconds" 
-                    type="number" 
-                    onChange={(e, v) => setDeltaTBySecond(parseFloat(v??"0"))} 
-                    defaultValue={deltaTBySecond.toString()}/>
+                <table className="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>A_max(t)</th>
+                            <th>f</th>
+                            <th>func</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {signals.map((m, i) => <tr key={i}>
+                            <td>{i}</td>
+                            <td>{m.aMax}</td>
+                            <td>{m.freq}</td>
+                            <td>{m.aMax} * cos({m.freq} * t)</td>
+                            </tr>)}
+                    </tbody>
+                </table>
 
-                <br />
+                <button className="btn btn-primary"
+                    onClick={Calculate}>
+                    Calculate
+                </button>
 
-                <TextField label="delta A plus" 
-                    type="number" 
-                    onChange={(e, v) => setDeltaA(parseFloat(v??"0"))} 
-                    defaultValue={deltaA.toString()}/>
-                
-                <hr />
-
-                <TextField label="A Max(t)" 
-                    type="number" 
-                    onChange={(e, v) => setAMax(parseFloat(v??"0"))} 
-                    defaultValue={aMax.toString()}/>
-                
-                <br />
-
-                <TextField label="Frequence" 
-                    type="number" 
-                    onChange={(e, v) => setFreq(parseInt(v??"0"))} 
-                    defaultValue={freq.toString()}/>
-                
-                <br />
-
-                <PrimaryButton text="Add signal" onClick={AddSignal} />
-
-                <hr />
-
-                {signals.map((m, i) => <div key={i}>{i}. {m.aMax} * cos({m.freq} * t)</div>)}
-
-                <hr />
-
-                <PrimaryButton text="Calculate" onClick={Calculate} />
-
-            </Stack>
-        </Card>
-    </div>);
+            </div>
+            
+        </div>
+    );
 }

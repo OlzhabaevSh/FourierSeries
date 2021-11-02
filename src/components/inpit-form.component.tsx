@@ -1,6 +1,3 @@
-import { PrimaryButton, Stack, TextField } from "@fluentui/react";
-import Card from "./card.component";
-
 export const InputForm: React.FunctionComponent<{delta: number, series: number[]}> = ({delta, series}) => {
     
     var str = "";
@@ -10,14 +7,22 @@ export const InputForm: React.FunctionComponent<{delta: number, series: number[]
     });
 
     return (
-        <Card title="Input forms">
-            <Stack>
-                <TextField label="delta t" value={delta.toString()} />
-                <TextField label="series" multiline={true} value={str} />
-                
-                <br />
-                <PrimaryButton text="Calculate" />
-            </Stack>  
-        </Card>
+        <div className="card">
+            <div className="card-header">
+                Input forms
+            </div>
+            <div className="card-body">
+                <div className="mg-3">
+                    <label className="form-label">delta t</label>
+                    <input className="form-control" type="number" value={delta.toString()} />
+                </div>
+                <div className="mg-3">
+                    <label className="form-label">delta t</label>
+                    <input className="form-control" type="number" value={str} />
+                </div>
+
+                <button className="btn btn-primary">Calculate</button>
+            </div>
+        </div>
     );
 };

@@ -1,5 +1,5 @@
-import { DefaultPalette, IStackItemStyles, IStackTokens, Stack } from '@fluentui/react';
 import './App.css';
+import 'bootstrap/dist/css/bootstrap.css';
 import { ApplicationHeader } from './components/application-header.component';
 import { LineChartDiagram } from './components/line-chart.component';
 import { CircleDiagram } from './components/circle-diagram.component';
@@ -9,23 +9,6 @@ import { SignalMixer } from './components/signal-mixer.component';
 import { useState } from 'react';
 
 export const App: React.FunctionComponent = () => {
-
-  // ui
-  const stackItemStyles: IStackItemStyles = {
-    root: {
-      alignItems: 'center',
-      display: 'flex',
-      height: 50,
-      justifyContent: 'center',
-    },
-  };
-  
-  // Tokens definition
-  const stackTokens: IStackTokens = {
-    childrenGap: 5,
-    padding: 10,
-  };
-
 
   // logic
 
@@ -58,32 +41,42 @@ export const App: React.FunctionComponent = () => {
 
 
   return (
-    <Stack>
-      
 
-      <ApplicationHeader />
+    <div className="container-fluid">
+      <div className="row">
+        <div className="col-md-12">
+          <ApplicationHeader />
+        </div>
+      </div>
 
-      <Stack horizontal>
-        <SignalMixer 
-          updateSignals={getDataByMixer} />
-        <LineChartDiagram 
-          sequence={sequence} 
-          delta={deltaT} />
-      </Stack>
+      <div className="row">
+        <div className="col-md-4">
+          <SignalMixer 
+            updateSignals={getDataByMixer} />
+        </div>
+        <div className="col-md-8">
+          <LineChartDiagram 
+            sequence={sequence} 
+            delta={deltaT} />
+        </div>
+      </div>
 
-      <Stack horizontal>
-        <CircleDiagram 
-          coordinates={circleDiagramCoordinates} 
-          centerOfMass={centerOfMass}
-          a={maxA} />
+      <br />
 
-        <SpectralAnalyzeDiagram 
-          sequence={sequence} 
-          updateCollback={updateCircleDiagramHandler} />
-        
-      </Stack>
+      <div className="row">
+        <div className="col-md-4">
+          <CircleDiagram 
+            coordinates={circleDiagramCoordinates} 
+            centerOfMass={centerOfMass}
+            a={maxA} />
+        </div>
+        <div className="col-md-8">
+          <SpectralAnalyzeDiagram 
+            sequence={sequence} 
+            updateCollback={updateCircleDiagramHandler} />
+        </div>
+      </div>
 
-
-    </Stack>
+    </div>
   );
 };

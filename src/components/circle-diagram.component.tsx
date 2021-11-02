@@ -1,5 +1,4 @@
 import { CartesianGrid, Legend, Scatter, ScatterChart, Tooltip, XAxis, YAxis } from "recharts";
-import Card from "./card.component";
 
 export const CircleDiagram: React.FunctionComponent <{ coordinates: { x: number, y: number }[], centerOfMass: { x: number, y: number }, a: number }> = ({ coordinates, centerOfMass, a }) => {
 
@@ -23,12 +22,14 @@ export const CircleDiagram: React.FunctionComponent <{ coordinates: { x: number,
     });
 
     return (
-        <Card title="Circle diagram">
-            <div>
-                <p>Center: {a} | {centerOfMass.x} {centerOfMass.y}</p>
+        <div className="card">
+            <div className="card-header">
+                Circle diagram
+            </div>
+            <div className="card-body">
                 <ScatterChart 
-                    width={400}
-                    height={400}>
+                    width={450}
+                    height={450}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <Tooltip cursor={{ strokeDasharray: '3 3' }} />
                         <Legend />
@@ -40,6 +41,6 @@ export const CircleDiagram: React.FunctionComponent <{ coordinates: { x: number,
                             fill="#8884d8" />
                 </ScatterChart>
             </div>
-        </Card>
+        </div>
     );
 };
