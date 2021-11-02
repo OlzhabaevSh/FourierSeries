@@ -44,7 +44,7 @@ export const SpectralAnalyzeDiagram: React.FunctionComponent<SpectralAnalyzeDiag
             // throw event
             updateCollback(data, centerOfMass);
 
-            await wait(200);
+            await wait(10);
         }
     }
 
